@@ -1,0 +1,8 @@
+name = transparency
+description = Test
+core = 7.x
+package = Transparency
+version = 1.0.inc
+files[] = views/views_plugin_style_transparency.inc
+files[] = views/transparency.views.inc
+files[] = views-view-transparency.inc

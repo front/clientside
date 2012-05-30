@@ -1,0 +1,26 @@
+<?php
+/**
+ * Implements hook_views_api().
+ */
+function transparency_views_api() {
+  return array(
+    'api' => views_api_version(),
+    'path' => drupal_get_path('module', 'transparency') . '/views'
+  );
+}
+
+/**
+ * Callback element needs only select the portion of the form to be updated.
+ * Since #ajax['callback'] return can be HTML or a renderable array (or an
+ * array of commands), we can just return a piece of the form.
+ */
+function transparency_view_options($form, $form_state) {
+  xdebug_break();
+  return $form['main_fieldset'];//['display_type_' . $form_state['values']['add_display']];
+}
+
+//function transparency_form_alter($form, $form_state, $form_id){
+//  if ($form_id == 'views-ui-edit-display-form'){
+//    xdebug_break;
+//  }
+//}
