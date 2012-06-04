@@ -12,66 +12,78 @@ class views_plugin_style_transparency extends views_plugin_style {
    */
   function option_definition() {
     $options = parent::option_definition();
-//    $options['']  = array('default' => '');
+//    $options['add_display']  = array('default' => '');
     return $options;
   }
 
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
-    xdebug_break();
-    $form['add_display'] = array(
-    '#title' => t('Add displays'),
-    '#type' => 'select',
-    '#options' => array('test1' => 'Json View1', 'test2' => 'Json view 2', 'test3' => 'Json view 3', 'test4' => 'Json view 4'),
-    '#default_value' => $form_state['values']['add_display'],
-    '#ajax' => array(
-      'callback' => 'transparency_view_options',
-      'wrapper' => 'displays-used',
-      'method' => 'replace',
-      'effect' => 'fade',
-    )
-   );
-    $form['main_fieldset'] = array(
-    '#title' => t("Data"),
-    '#prefix' => '<div id="displays-used">',
-    '#suffix' => '</div>',
-    '#type' => 'fieldset',
-    '#description' => t('Please select.'),
-   );
-    if (!empty($form_state['values']['add_display'])){
-    if (!isset($form['main_fieldset']['display_type_' . $form_state['values']['add_display']])){
-      $form['main_fieldset'][($form['display_type_' . $form_state['values']['add_display']])] = array(
-        '#type' => 'textfield',
-        '#title' => t('Title'),
-        '#default_value' => $form_state['values']['add_display'],
-      );
-      $form[($form['main_fieldset']['display_type_' . $form_state['values']['add_display']]) . '_mappings'] = array(
-        '#tree' => 'true',
-        '#type' => 'fieldset',
-        '#title' => 'Field mappings',
-        '#collapsible' => true,
-      );
-      $template_fields = array(
-        'field_1' => t('Template field 1'),
-        'field_2'=> t('Template field 2'),
-      );
-      $fields = array(
-        'field_1' => t('Original field 1'),
-        'field_2'=> t('Original field 2'),
-      );
-      foreach($template_fields AS $fid => $fname){
-        $form['main_fieldset'][($form['display_type_' . $form_state['values']['add_display']]) . '_mappings']['display_' . $fid] = array(
-        '#type' =>'select',
-        '#title' => t('Map template field %field to...', array('%field' => $fname)),
-          '#options' => $fields,
-      );
-      $form['main_fieldset'][($form['display_type_' . $form_state['values']['add_display']]) . '_mappings']['delete_this'] = array(
-        '#type' => 'submit',
-        '#value' => t('Delete this entry'),
-      );
+    //xdebug_break();
+    $tviews = views_get_enabled_views();
+    
+    //Herre's the field handlers
+    //$handlers = $this->display->handler->get_handlers('field');
+    //$field_name = $handlers[0]
+    
+    // Create an array of allowed columns from the data we know:
+    //$field_names = $this->display->handler->get_field_labels();
+
+    $json_views = array();
+    foreach ($tviews AS $tview_id => $tview) {
+      foreach ($tview->display AS $tdisplay_id => $tdisplay) {
+        if (isset($tdisplay->display_options) && $tdisplay->display_options['style_plugin'] == 'views_json') {
+          // We have a json-enabled display.
+
+
+          if (empty($json_views[$tdisplay_id])) {
+            $json_views[$tview_id][$tdisplay_id] = $tdisplay->display_title;
+          };
+        }
       }
     }
-  }
+
+
+    $form['add_display'] = array(
+      '#title' => t('Add displays'),
+      '#type' => 'select',
+      '#multiple' => true,
+      '#options' => $json_views,
+      '#default_value' => $this->options['add_display'],
+    );
+    //if (!empty($form_state['values']['add_display'])){
+    foreach ($json_views AS $view_id => $view_displays) {
+      foreach ($view_displays AS $did => $d) {
+
+
+
+
+          $form['display_' . $did] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Settings for the display \'@displayid\' at view \'@view\'', array('@view' => $view_id, '@displayid' => $d)),
+          );
+          $form['display_' . $did]['title'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Title'),
+          );         
+          
+          $template_fields = array(
+            'field_1' => t('Template field 1'),
+            'field_2' => t('Template field 2'),
+          );
+          $fields = array(
+            'field_1' => t('Original field 1'),
+            'field_2' => t('Original field 2'),
+          );
+          foreach ($template_fields AS $fid => $fname) {
+            $form['display_' . $did]['map_' . $fid] = array(
+              '#type' => 'select',
+              '#title' => t('Map template field %field to...', array('%field' => $fname)),
+              '#options' => $fields,
+            );
+          }
+        }
+      
+    }
   }
 
   /**
@@ -85,9 +97,10 @@ class views_plugin_style_transparency extends views_plugin_style {
 
     if (!empty($this->view->live_preview)) {
       return t('You want usable display?? ORLY?');
-    } else {
+    }
+    else {
 
-    return $output;
+      return $output;
     }
   }
 

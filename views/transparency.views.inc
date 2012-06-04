@@ -15,7 +15,7 @@ function transparency_views_plugins() {
         'path' => $path . '/views',
         'theme' => 'views_view_transparency',
         'theme path' => $path . '/views',
-        'uses fields' => TRUE,
+        'uses fields' => FALSE,
         'uses options' => TRUE, 
         'uses grouping' => FALSE,
         'uses row plugin' => FALSE,
